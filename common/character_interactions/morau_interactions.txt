@@ -1,0 +1,87 @@
+﻿offer_twilight_interaction = {
+	category = interaction_category_friendly
+	desc = offer_twilight_interaction_desc
+
+	is_shown = {
+		scope:actor = {
+			dynasty = dynasty:dynn_Dayne
+			OR = {
+				this = dynasty:dynn_Dayne.dynast
+				any_character_artifact = {
+					has_artifact_modifier = vs_twilight_modifier
+				}
+			}
+		}
+		scope:recipient = {
+			is_dayne_bastard_house_trigger = yes
+			NOT = { has_character_flag = claimed_twilight }
+		}
+	}
+
+	is_valid_showing_failures_only = {
+		scope:recipient = {
+			worthy_sword_of_the_evening_trigger = yes
+		}
+		scope:actor = {
+			dynasty = {
+				any_dynasty_member = {
+					any_character_artifact = {
+						has_artifact_modifier = vs_twilight_modifier
+					}
+				}
+			}
+		}
+		NOT = {
+			scope:actor.dynasty = {
+				any_dynasty_member = {
+					has_character_flag = is_sword_of_evening
+				}
+			}
+		}
+	}
+
+	on_accept = {
+		scope:recipient = {
+			add_character_flag = is_sword_of_evening
+			add_character_flag = claimed_twilight
+			give_nickname = nick_agot_the_sword_of_the_evening
+			add_prestige = massive_prestige_value
+			add_prestige_level = 1
+		}
+		scope:actor = {
+			dynasty = {
+				every_dynasty_member = {
+					every_character_artifact = {
+						limit = {
+							has_artifact_modifier = vs_twilight_modifier
+						}
+						save_scope_as = twilight
+					}
+				}
+			}
+		}
+		scope:twilight = {
+			set_owner = scope:recipient
+			equip_artifact_to_owner_replace = yes
+		}
+	}
+
+	auto_accept = yes
+
+	ai_targets = {
+		ai_recipients = dynasty
+	}
+	ai_frequency = 60
+	ai_potential = {
+		dynasty = dynasty:dynn_Dayne
+		OR = {
+			this = dynasty:dynn_Dayne.dynast
+			any_character_artifact = {
+				has_artifact_modifier = vs_twilight_modifier
+			}
+		}
+	}
+	ai_will_do = {
+		base = 50
+	}
+}

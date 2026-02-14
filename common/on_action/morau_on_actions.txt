@@ -1,0 +1,134 @@
+﻿on_6th_birthday = {
+	on_actions = {
+		on_dayne_bastard_birthday_sote
+	}
+}
+
+on_dayne_bastard_birthday_sote = {
+	effect = {
+		if = {
+			limit = {
+				exists = dynasty
+				dynasty = dynasty:dynn_Dayne
+				is_dayne_bastard_house_trigger = yes
+			}
+			random_list = {
+				5 = {
+					save_scope_as = prodigy
+					if = {
+						limit = {
+							exists = father
+							NAND = {
+								exists = mother
+								mother = {
+									is_ai = no
+								}
+							}
+							NAND = {
+								exists = court_owner
+								court_owner = {
+									exists = dynasty
+									dynasty = dynasty:dynn_Dayne
+									is_grandparent_of = root
+									is_ai = no
+								}
+							}
+						}
+						if = {
+							limit = {
+								exists = mother
+							}
+							mother = {
+								save_scope_as = dayne_mother
+							}
+						}
+						father = {
+							save_scope_as = dayne_father
+							trigger_event = agot_morau_prodigy.0001
+						}
+
+					}
+					else_if = {
+						limit = {
+							exists = mother
+							mother = {
+								is_ai = no
+							}
+						}
+						if = {
+							limit = {
+								exists = father
+							}
+							father = {
+								save_scope_as = dayne_father
+							}
+						}
+						mother = {
+							save_scope_as = dayne_mother
+							trigger_event = agot_morau_prodigy.0001
+						}
+					}
+					else_if = {
+						limit = {
+							exists = court_owner
+							court_owner = {
+								exists = dynasty
+								dynasty = dynasty:dynn_Dayne
+								is_grandparent_of = root
+								is_ai = no
+							}
+						}
+						if = {
+							limit = {
+								exists = father
+							}
+							father = {
+								save_scope_as = dayne_father
+							}
+						}
+						if = {
+							limit = {
+								exists = mother
+							}
+							mother = {
+								save_scope_as = dayne_mother
+							}
+						}
+						court_owner = {
+							save_scope_as = dayne_grandparent
+							trigger_event = agot_morau_prodigy.0001
+						}
+					}
+					modifier = {
+						add = {
+							if = {
+								limit = {
+									root = {
+										has_trait = bossy
+									}
+								}
+								add = 5
+							}
+							if = {
+								limit = {
+									root = {
+										OR = {
+											has_trait = physique_bad
+											has_trait = weak
+											has_trait = intellect_bad
+											has_trait = dull
+										}
+									}
+								}
+								multiply = 0
+							}
+						}
+					}
+				}
+				95 = {
+					#Nothing Happens
+				}
+			}
+		}
+	}
+}

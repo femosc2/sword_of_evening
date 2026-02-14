@@ -1,0 +1,660 @@
+﻿agot_story_sote = {
+	on_setup = {
+		if = {
+			limit = {
+				exists = story_owner.var:dayne_bastard_father_passthrough
+			}
+			set_variable = {
+				name = dayne_father
+				value = story_owner.var:dayne_bastard_father_passthrough
+			}
+		}
+		if = {
+			limit = {
+				exists = story_owner.var:dayne_bastard_mother_passthrough
+			}
+			set_variable = {
+				name = dayne_mother
+				value = story_owner.var:dayne_bastard_mother_passthrough
+			}
+		}
+		if = {
+			limit = {
+				exists = story_owner.var:dayne_bastard_grandparent_passthrough
+			}
+			set_variable = {
+				name = dayne_grandparent
+				value = story_owner.var:dayne_bastard_grandparent_passthrough
+			}
+		}
+
+		story_owner = {
+			if = {
+				limit = {
+					NOT = { exists = var:dayne_mother }
+					exists = real_mother
+					real_mother = { is_alive = yes }
+				}
+				real_mother = {
+					save_scope_as = dayne_mother
+					set_variable = {
+						name = dayne_mother
+						value = scope:dayne_mother
+					}
+				}
+				remove_variable = dayne_bastard_father_passthrough
+			}
+			if = {
+				limit = {
+					NOT = { exists = var:dayne_father }
+					exists = father
+					father = { is_alive = yes }
+				}
+				father = {
+					save_scope_as = dayne_father
+					set_variable = {
+						name = dayne_father
+						value = scope:dayne_father
+					}
+				}
+				remove_variable = dayne_bastard_mother_passthrough
+			}
+			remove_variable = dayne_bastard_grandparent_passthrough
+			save_scope_as = prodigy
+		}
+		var:dayne_father = { save_scope_as = dayne_father }
+		set_variable = {
+			name = dayne_prodigy_stages
+			value = flag:stage_0
+		}
+
+		# Find or create Twilight
+		if = {
+			limit = {
+				story_owner.dynasty = {
+					any_dynasty_member = {
+						any_character_artifact = {
+							has_artifact_modifier = vs_twilight_modifier
+						}
+					}
+				}
+			}
+			random_artifact = {
+				limit = { has_artifact_modifier = vs_twilight_modifier }
+				save_scope_as = twilight
+			}
+		}
+		set_variable = {
+			name = twilight_sword
+			value = scope:twilight
+		}
+	}
+
+	on_end = {
+		if = { # No existing SotE, father is dynasty head and player
+			limit = {
+				var:dayne_prodigy_stages = flag:stage_5
+				var:dayne_father = { is_alive = yes }
+				NOT = { story_owner = { is_ai = no } }
+				dynasty:dynn_Dayne.dynast = var:dayne_father
+				story_owner.dynasty = { NOT = { any_dynasty_member = { has_character_flag = is_sword_of_evening } } }
+			}
+			var:twilight_sword = { save_scope_as = twilight }
+			story_owner = { save_scope_as = prodigy }
+			var:dayne_father = {
+				save_scope_as = dayne_parent
+				trigger_event = agot_morau_prodigy.0007
+			}
+		}
+		else_if = { # There is already a SotE
+			limit = {
+				var:dayne_prodigy_stages = flag:stage_5
+				story_owner.dynasty = {
+					any_dynasty_member = { has_character_flag = is_sword_of_evening }
+				}
+				var:dayne_father = { is_alive = yes }
+				NOT = { story_owner = { is_ai = no } }
+				NOT = { var:dayne_mother = { is_ai = no } }
+			}
+			var:twilight_sword = { save_scope_as = twilight }
+			story_owner = { save_scope_as = prodigy }
+			var:dayne_father = {
+				save_scope_as = dayne_parent
+				trigger_event = agot_morau_prodigy.0008
+			}
+		}
+		else_if = { # Player is the prodigy, no existing SotE
+			limit = {
+				var:dayne_prodigy_stages = flag:stage_5
+				story_owner = {
+					is_ai = no
+				}
+				story_owner.dynasty = {
+					NOT = { any_dynasty_member = { has_character_flag = is_sword_of_evening } }
+				}
+			}
+			var:twilight_sword = { save_scope_as = twilight }
+			dynasty:dynn_Dayne.dynast = { save_scope_as = dayne_dynasty_head }
+			story_owner = {
+				save_scope_as = prodigy
+				trigger_event = agot_morau_prodigy.0013
+			}
+		}
+		else_if = { # Player is prodigy, there is already a SotE
+			limit = {
+				var:dayne_prodigy_stages = flag:stage_5
+				story_owner = {
+					is_ai = no
+				}
+				story_owner.dynasty = {
+					any_dynasty_member = { has_character_flag = is_sword_of_evening }
+				}
+			}
+			var:twilight_sword = { save_scope_as = twilight }
+			story_owner = {
+				save_scope_as = prodigy
+				trigger_event = agot_morau_prodigy.0014
+			}
+		}
+		else_if = { # Mother is dynasty head
+			limit = {
+				AND = {
+					var:dayne_prodigy_stages = flag:stage_5
+					story_owner = {
+						NOT = {
+							is_ai = no
+						}
+					}
+					NOT = {
+						story_owner.dynasty = {
+							any_dynasty_member = { has_character_flag = is_sword_of_evening }
+						}
+					}
+					dynasty:dynn_Dayne.dynast = var:dayne_mother
+				}
+			}
+			var:twilight_sword = { save_scope_as = twilight }
+			story_owner = { save_scope_as = prodigy }
+			var:dayne_mother = {
+				save_scope_as = dayne_parent
+				trigger_event = agot_morau_prodigy.0007
+			}
+		}
+		else_if = { # Mother is player, already a SotE
+			limit = {
+				var:dayne_prodigy_stages = flag:stage_5
+				story_owner = {
+					NOT = { is_ai = no }
+				}
+				story_owner.dynasty = { any_dynasty_member = { has_character_flag = is_sword_of_evening } }
+				var:dayne_mother = { is_ai = no }
+			}
+			var:twilight_sword = { save_scope_as = twilight }
+			story_owner = { save_scope_as = prodigy }
+			var:dayne_mother = {
+				save_scope_as = dayne_parent
+				trigger_event = agot_morau_prodigy.0008
+			}
+		}
+		else_if = { # Fallback to dynasty head
+			limit = {
+				AND = {
+					var:dayne_prodigy_stages = flag:stage_5
+					story_owner = {
+						NOT = {
+							is_ai = no
+						}
+					}
+					story_owner.dynasty = { NOT = { any_dynasty_member = { has_character_flag = is_sword_of_evening } } }
+				}
+			}
+			var:twilight_sword = { save_scope_as = twilight }
+			story_owner = { save_scope_as = prodigy }
+			var:dayne_father = { save_scope_as = dayne_father }
+			var:dayne_mother = { save_scope_as = dayne_mother }
+			dynasty:dynn_Dayne.dynast = { save_scope_as = dayne_dynasty_head }
+			scope:dayne_dynasty_head ?= { trigger_event = agot_morau_prodigy.0007 }
+		}
+		else_if = { # Grandparent is dynasty head, no SotE
+			limit = {
+				exists = var:dayne_grandparent
+				var:dayne_prodigy_stages = flag:stage_5
+				NOT = { story_owner = { is_ai = no } }
+				dynasty:dynn_Dayne.dynast = var:dayne_grandparent
+				story_owner.dynasty = { NOT = { any_dynasty_member = { has_character_flag = is_sword_of_evening } } }
+			}
+			var:twilight_sword = { save_scope_as = twilight }
+			story_owner = { save_scope_as = prodigy }
+			var:dayne_grandparent = {
+				save_scope_as = dayne_grandparent
+				trigger_event = agot_morau_prodigy.0007
+			}
+		}
+		else_if = { # Grandparent is player, already a SotE
+			limit = {
+				exists = var:dayne_grandparent
+				var:dayne_prodigy_stages = flag:stage_5
+				story_owner.dynasty = {
+					any_dynasty_member = { has_character_flag = is_sword_of_evening }
+				}
+				NOT = { story_owner = { is_ai = no } }
+			}
+			var:twilight_sword = { save_scope_as = twilight }
+			story_owner = { save_scope_as = prodigy }
+			var:dayne_grandparent = {
+				save_scope_as = dayne_grandparent
+				trigger_event = agot_morau_prodigy.0008
+			}
+		}
+	}
+
+	on_owner_death = {
+		if = {
+			limit = {
+				var:dayne_mother = {
+					is_ai = no
+				}
+			}
+			var:twilight_sword = { save_scope_as = twilight }
+			story_owner = { save_scope_as = prodigy }
+			var:dayne_mother = {
+				save_scope_as = dayne_parent
+				trigger_event = agot_morau_prodigy.0017
+			}
+		}
+		else_if = {
+			limit = {
+				var:dayne_father = { is_alive = yes }
+				var:dayne_mother = { is_ai = yes }
+			}
+			var:twilight_sword = { save_scope_as = twilight }
+			story_owner = { save_scope_as = prodigy }
+			var:dayne_father = {
+				save_scope_as = dayne_parent
+				trigger_event = agot_morau_prodigy.0017
+			}
+		}
+		else_if = {
+			limit = {
+				exists = var:dayne_grandparent
+				var:dayne_grandparent = {
+					is_ai = no
+				}
+			}
+			var:twilight_sword = { save_scope_as = twilight }
+			story_owner = { save_scope_as = prodigy }
+			var:dayne_grandparent = {
+				save_scope_as = dayne_grandparentparent
+				trigger_event = agot_morau_prodigy.0017
+			}
+		}
+	}
+
+	effect_group = {
+		days = 731
+		first_valid = {
+			triggered_effect = { # Stage 0 -> 1: Brave/Prowess
+				trigger = {
+					var:dayne_prodigy_stages = flag:stage_0
+				}
+				effect = {
+					if = {
+						limit = {
+							var:dayne_father = {
+								is_alive = yes
+							}
+							NOR = {
+								story_owner = {
+									is_ai = no
+								}
+								var:dayne_mother = {
+									is_ai = no
+								}
+							}
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = { save_scope_as = prodigy }
+						var:dayne_father = {
+							save_scope_as = dayne_parent
+							trigger_event = agot_morau_prodigy.0002
+						}
+					}
+					else_if = {
+						limit = {
+							var:dayne_mother = {
+								is_ai = no
+							}
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = { save_scope_as = prodigy }
+						var:dayne_mother = {
+							save_scope_as = dayne_parent
+							trigger_event = agot_morau_prodigy.0002
+						}
+					}
+					else_if = {
+						limit = {
+							story_owner = {
+								is_ai = no
+							}
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = {
+							save_scope_as = prodigy
+							trigger_event = agot_morau_prodigy.0009
+						}
+					}
+					else_if = {
+						limit = {
+							exists = var:dayne_grandparent
+							var:dayne_grandparent = {
+								is_alive = yes
+								is_ai = no
+							}
+						}
+						story_owner = { save_scope_as = prodigy }
+						var:twilight_sword = { save_scope_as = twilight }
+						var:dayne_grandparent = {
+							save_scope_as = dayne_grandparent
+							trigger_event = agot_morau_prodigy.0002
+						}
+					}
+					set_variable = {
+						name = dayne_prodigy_stages
+						value = flag:stage_1
+					}
+				}
+			}
+
+			triggered_effect = { # Stage 1 -> 2: Just/Prowess
+				trigger = {
+					var:dayne_prodigy_stages = flag:stage_1
+				}
+				effect = {
+					if = {
+						limit = {
+							var:dayne_father = {
+								is_alive = yes
+							}
+							NOR = {
+								story_owner = {
+									is_ai = no
+								}
+								var:dayne_mother = {
+									is_ai = no
+								}
+							}
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = { save_scope_as = prodigy }
+						var:dayne_father = {
+							save_scope_as = dayne_parent
+							trigger_event = agot_morau_prodigy.0003
+						}
+					}
+					else_if = {
+						limit = {
+							var:dayne_mother = {
+								is_ai = no
+							}
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = { save_scope_as = prodigy }
+						var:dayne_mother = {
+							save_scope_as = dayne_parent
+							trigger_event = agot_morau_prodigy.0003
+						}
+					}
+					else_if = {
+						limit = {
+							story_owner = { is_ai = no }
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = {
+							save_scope_as = prodigy
+							trigger_event = agot_morau_prodigy.0010
+						}
+					}
+					else_if = {
+						limit = {
+							exists = var:dayne_grandparent
+							var:dayne_grandparent = {
+								is_alive = yes
+								is_ai = no
+							}
+						}
+						story_owner = { save_scope_as = prodigy }
+						var:twilight_sword = { save_scope_as = twilight }
+						var:dayne_grandparent = {
+							save_scope_as = dayne_grandparent
+							trigger_event = agot_morau_prodigy.0003
+						}
+					}
+					set_variable = {
+						name = dayne_prodigy_stages
+						value = flag:stage_2
+					}
+				}
+			}
+
+			triggered_effect = { # Stage 2 -> 3: Compassionate/Prowess
+				trigger = {
+					var:dayne_prodigy_stages = flag:stage_2
+				}
+				effect = {
+					if = {
+						limit = {
+							var:dayne_father = {
+								is_alive = yes
+							}
+							NOR = {
+								story_owner = {
+									is_ai = no
+								}
+								var:dayne_mother = {
+									is_ai = no
+								}
+							}
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = { save_scope_as = prodigy }
+						var:dayne_father = {
+							save_scope_as = dayne_parent
+							trigger_event = agot_morau_prodigy.0004
+						}
+					}
+					else_if = {
+						limit = {
+							var:dayne_mother = {
+								is_ai = no
+							}
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = { save_scope_as = prodigy }
+						var:dayne_mother = {
+							save_scope_as = dayne_parent
+							trigger_event = agot_morau_prodigy.0004
+						}
+					}
+					else_if = {
+						limit = {
+							story_owner = {
+								is_ai = no
+							}
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = {
+							save_scope_as = prodigy
+							trigger_event = agot_morau_prodigy.0011
+						}
+					}
+					else_if = {
+						limit = {
+							exists = var:dayne_grandparent
+							var:dayne_grandparent = {
+								is_alive = yes
+								is_ai = no
+							}
+						}
+						story_owner = { save_scope_as = prodigy }
+						var:twilight_sword = { save_scope_as = twilight }
+						var:dayne_grandparent = {
+							save_scope_as = dayne_grandparent
+							trigger_event = agot_morau_prodigy.0004
+						}
+					}
+					set_variable = {
+						name = dayne_prodigy_stages
+						value = flag:stage_3
+					}
+				}
+			}
+
+			triggered_effect = { # Stage 3 -> 4: Blademaster trial
+				trigger = {
+					var:dayne_prodigy_stages = flag:stage_3
+				}
+				effect = {
+					if = {
+						limit = {
+							var:dayne_father = {
+								is_alive = yes
+							}
+							NOR = {
+								story_owner = {
+									is_ai = no
+								}
+								var:dayne_mother = {
+									is_ai = no
+								}
+							}
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = { save_scope_as = prodigy }
+						var:dayne_father = {
+							save_scope_as = dayne_parent
+							trigger_event = agot_morau_prodigy.0005
+						}
+					}
+					else_if = {
+						limit = {
+							var:dayne_mother = {
+								is_ai = no
+							}
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = { save_scope_as = prodigy }
+						var:dayne_mother = {
+							save_scope_as = dayne_parent
+							trigger_event = agot_morau_prodigy.0005
+						}
+					}
+					else_if = {
+						limit = {
+							story_owner = {
+								is_ai = no
+							}
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = {
+							save_scope_as = prodigy
+							trigger_event = agot_morau_prodigy.0012
+						}
+					}
+					else_if = {
+						limit = {
+							exists = var:dayne_grandparent
+							var:dayne_grandparent = {
+								is_alive = yes
+								is_ai = no
+							}
+						}
+						story_owner = { save_scope_as = prodigy }
+						var:twilight_sword = { save_scope_as = twilight }
+						var:dayne_grandparent = {
+							save_scope_as = dayne_grandparent
+							trigger_event = agot_morau_prodigy.0005
+						}
+					}
+					set_variable = {
+						name = dayne_prodigy_stages
+						value = flag:stage_4
+					}
+				}
+			}
+
+			triggered_effect = { # Stage 4 -> 5: Final judgment
+				trigger = {
+					var:dayne_prodigy_stages = flag:stage_4
+				}
+				effect = {
+					if = {
+						limit = {
+							var:dayne_father = {
+								is_alive = yes
+							}
+							NOR = {
+								story_owner = {
+									is_ai = no
+								}
+								var:dayne_mother = {
+									is_ai = no
+								}
+							}
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = { save_scope_as = prodigy }
+						var:dayne_father = {
+							save_scope_as = dayne_parent
+							trigger_event = agot_morau_prodigy.0006
+						}
+					}
+					else_if = {
+						limit = {
+							var:dayne_mother = {
+								is_ai = no
+							}
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = { save_scope_as = prodigy }
+						var:dayne_mother = {
+							save_scope_as = dayne_parent
+							trigger_event = agot_morau_prodigy.0006
+						}
+					}
+					else_if = {
+						limit = {
+							story_owner = {
+								is_ai = no
+							}
+						}
+						var:twilight_sword = { save_scope_as = twilight }
+						story_owner = {
+							save_scope_as = prodigy
+							trigger_event = agot_morau_prodigy.0013
+						}
+					}
+					else_if = {
+						limit = {
+							exists = var:dayne_grandparent
+							var:dayne_grandparent = {
+								is_alive = yes
+								is_ai = no
+							}
+						}
+						story_owner = { save_scope_as = prodigy }
+						var:twilight_sword = { save_scope_as = twilight }
+						var:dayne_grandparent = {
+							save_scope_as = dayne_grandparent
+							trigger_event = agot_morau_prodigy.0006
+						}
+					}
+					set_variable = {
+						name = dayne_prodigy_stages
+						value = flag:stage_5
+					}
+				}
+			}
+		}
+	}
+}

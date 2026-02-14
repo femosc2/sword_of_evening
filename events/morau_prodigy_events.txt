@@ -1,0 +1,1911 @@
+﻿namespace = agot_morau_prodigy
+
+# Event 0001: Childhood discovery - parent/grandparent sees potential in bastard Dayne child
+agot_morau_prodigy.0001 = {
+	type = character_event
+	title = agot_morau_prodigy.0001.t
+	desc = agot_morau_prodigy.0001.desc
+	theme = education
+
+	left_portrait = {
+		character = root
+		animation = admiration
+	}
+
+	right_portrait = {
+		character = scope:prodigy
+		animation = ecstasy
+	}
+
+	immediate = {
+		# Fallback scope setup for console testing: if scope:prodigy isn't set, pick a valid child
+		if = {
+			limit = {
+				NOT = { exists = scope:prodigy }
+			}
+			# If root has a child who is a bastard Dayne, use them
+			if = {
+				limit = {
+					any_child = {
+						is_dayne_bastard_house_trigger = yes
+						age < 16
+					}
+				}
+				random_child = {
+					limit = {
+						is_dayne_bastard_house_trigger = yes
+						age < 16
+					}
+					save_scope_as = prodigy
+				}
+			}
+			# Otherwise root IS the prodigy (console: event on the child directly)
+			else = {
+				root = { save_scope_as = prodigy }
+			}
+		}
+		if = {
+			limit = {
+				NOT = { exists = scope:dayne_father }
+				exists = scope:prodigy.father
+				scope:prodigy.father = { is_alive = yes }
+			}
+			scope:prodigy.father = { save_scope_as = dayne_father }
+		}
+		if = {
+			limit = {
+				NOT = { exists = scope:dayne_mother }
+				exists = scope:prodigy.mother
+				scope:prodigy.mother = { is_alive = yes }
+			}
+			scope:prodigy.mother = { save_scope_as = dayne_mother }
+		}
+
+		# Check if Twilight already exists in the dynasty
+		if = {
+			limit = {
+				scope:prodigy.dynasty = {
+					any_dynasty_member = {
+						any_character_artifact = {
+							has_artifact_modifier = vs_twilight_modifier
+						}
+					}
+				}
+			}
+			scope:prodigy.dynasty = {
+				random_dynasty_member = {
+					limit = {
+						any_character_artifact = {
+							has_artifact_modifier = vs_twilight_modifier
+						}
+					}
+					random_character_artifact = {
+						limit = { has_artifact_modifier = vs_twilight_modifier }
+						save_scope_as = twilight
+					}
+				}
+			}
+		}
+		# If Twilight doesn't exist, create it
+		else = {
+			agot_create_artifact_vs_twilight_effect = { OWNER = scope:prodigy }
+			scope:newly_created_artifact = {
+				save_scope_as = twilight
+			}
+		}
+	}
+
+	option = {
+		name = agot_morau_prodigy.0001.a
+		custom_tooltip = agot_morau_prodigy.0001.a.tt
+
+		if = {
+			limit = {
+				scope:prodigy = {
+					is_female = yes
+				}
+			}
+			scope:prodigy = {
+				add_character_modifier = agot_tomboy_modifier
+				set_focus = education_martial
+				add_prowess_skill = 2
+			}
+		}
+		scope:prodigy = {
+			add_trait = lifestyle_blademaster
+			set_variable = {
+				name = dayne_bastard_father_passthrough
+				value = scope:dayne_father
+			}
+			set_variable = {
+				name = dayne_bastard_mother_passthrough
+				value = scope:dayne_mother
+			}
+			if = {
+				limit = {
+					exists = scope:dayne_grandparent
+				}
+				set_variable = {
+					name = dayne_bastard_grandparent_passthrough
+					value = scope:dayne_grandparent
+				}
+			}
+			create_story = agot_story_sote
+		}
+
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = {
+		name = agot_morau_prodigy.0001.b
+		custom_tooltip = agot_morau_prodigy.0001.b.tt
+
+		ai_chance = {
+			base = 0
+		}
+	}
+}
+
+# Event 0002: Parent - Brave or Prowess training
+agot_morau_prodigy.0002 = {
+	type = character_event
+	title = agot_morau_prodigy.0002.t
+	desc = agot_morau_prodigy.0002.desc
+	theme = education
+
+	left_portrait = {
+		character = root
+		animation = admiration
+	}
+
+	right_portrait = {
+		character = scope:prodigy
+		animation = ecstasy
+	}
+
+	option = {
+		name = agot_morau_prodigy.0002.a
+		custom_tooltip = agot_morau_prodigy.0002.a.tt
+
+		trigger = {
+			scope:prodigy = {
+				number_of_personality_traits < personality_trait_limit
+			}
+		}
+		hidden_effect = {
+			scope:prodigy = {
+				if = {
+					limit = {
+						number_of_personality_traits < personality_trait_limit
+					}
+					random_list = {
+						70 = {
+							if = {
+								limit = {
+									scope:prodigy = {
+										has_trait = craven
+									}
+								}
+								remove_trait = craven
+							}
+							add_trait = brave
+							root = {
+								send_interface_toast = {
+									title = agot_morau_prodigy.0002.gainedtraitbrave
+								}
+							}
+
+							modifier = {
+								trigger = {
+									root = { has_trait = brave }
+								}
+								factor = 1.2
+							}
+							modifier = {
+								trigger = {
+									scope:prodigy = {
+										OR = {
+											has_trait = rowdy
+											has_trait = curious
+										}
+									}
+								}
+								add = 10
+							}
+						}
+						30 = {
+							add_trait = craven
+							root = {
+								send_interface_toast = {
+									title = agot_morau_prodigy.0002.gainedtraitcraven
+								}
+								trigger_event = agot_morau_prodigy.0018
+							}
+							modifier = {
+								trigger = {
+									root = { has_trait = craven }
+								}
+								factor = 1.2
+							}
+							modifier = {
+								trigger = {
+									scope:prodigy = {
+										has_trait = pensive
+									}
+								}
+								add = 10
+							}
+							random_owned_story = {
+								limit = {
+									story_type = agot_story_sote
+								}
+								end_story = yes
+							}
+						}
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 50
+		}
+
+	}
+
+	option = {
+		name = agot_morau_prodigy.0002.b
+		custom_tooltip = agot_morau_prodigy.0002.b.tt
+
+		scope:prodigy = {
+			random_list = {
+				10 = {
+					add_prowess_skill = 3
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0002.gainedprowess3
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 2
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0002.gainedprowess2
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 1
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0002.gainedprowess2
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 0
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0002.gainednoprowess
+						}
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 50
+		}
+	}
+}
+
+# Event 0003: Parent - Just or Prowess training
+agot_morau_prodigy.0003 = {
+	type = character_event
+	title = agot_morau_prodigy.0003.t
+	desc = agot_morau_prodigy.0003.desc
+	theme = education
+
+	left_portrait = {
+		character = root
+		animation = admiration
+	}
+
+	right_portrait = {
+		character = scope:prodigy
+		animation = ecstasy
+	}
+
+	option = {
+		name = agot_morau_prodigy.0003.a
+		custom_tooltip = agot_morau_prodigy.0003.a.tt
+
+		trigger = {
+			scope:prodigy = {
+				number_of_personality_traits < personality_trait_limit
+			}
+		}
+		hidden_effect = {
+			scope:prodigy = {
+				random_list = {
+					70 = {
+						if = {
+							limit = {
+								scope:prodigy = {
+									has_trait = callous
+								}
+							}
+							remove_trait = callous
+						}
+						add_trait = just
+						root = {
+							send_interface_toast = {
+								title = agot_morau_prodigy.0003.gainedtraitjust
+							}
+						}
+						modifier = {
+							trigger = {
+								root = { has_trait = just }
+							}
+							factor = 1.2
+						}
+						modifier = {
+							trigger = {
+								scope:prodigy = {
+									OR = {
+										has_trait = pensive
+										has_trait = charming
+									}
+								}
+							}
+							add = 10
+						}
+					}
+					30 = {
+						if = {
+							limit = {
+								scope:prodigy = { has_trait = just }
+							}
+							remove_trait = just
+						}
+						add_trait = callous
+						root = {
+							send_interface_toast = {
+								title = agot_morau_prodigy.0003.gainedtraitcallous
+							}
+							trigger_event = agot_morau_prodigy.0018
+						}
+						modifier = {
+							trigger = {
+								root = { has_trait = callous }
+							}
+							factor = 1.2
+						}
+						modifier = {
+							trigger = {
+								scope:prodigy = {
+									OR = {
+										has_trait = bossy
+										has_trait = rowdy
+									}
+								}
+							}
+							add = 10
+						}
+
+						random_owned_story = {
+							limit = {
+								story_type = agot_story_sote
+							}
+							end_story = yes
+						}
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 50
+		}
+	}
+
+	option = {
+		name = agot_morau_prodigy.0003.b
+		custom_tooltip = agot_morau_prodigy.0003.b.tt
+
+		scope:prodigy = {
+			random_list = {
+				10 = {
+					add_prowess_skill = 3
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0002.gainedprowess3
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 2
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0002.gainedprowess2
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 1
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0002.gainedprowess2
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 0
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0002.gainednoprowess
+						}
+					}
+				}
+			}
+
+		}
+		ai_chance = {
+			base = 50
+		}
+	}
+}
+
+# Event 0004: Parent - Compassionate or Prowess training
+agot_morau_prodigy.0004 = {
+	type = character_event
+	title = agot_morau_prodigy.0004.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					scope:prodigy = {
+						number_of_personality_traits < personality_trait_limit
+					}
+				}
+				desc = agot_morau_prodigy.0004.desc
+			}
+			desc = agot_morau_prodigy.0004.desc_nocomp
+		}
+	}
+	theme = education
+
+	left_portrait = {
+		character = root
+		animation = admiration
+	}
+
+	right_portrait = {
+		character = scope:prodigy
+		animation = ecstasy
+	}
+
+	option = {
+		name = agot_morau_prodigy.0004.a
+		custom_tooltip = agot_morau_prodigy.0004.a.tt
+
+		trigger = {
+			scope:prodigy = {
+				number_of_personality_traits < personality_trait_limit
+			}
+		}
+
+		hidden_effect = {
+			scope:prodigy = {
+				random_list = {
+					70 = {
+						if = {
+							limit = {
+								scope:prodigy = {
+									has_trait = sadistic
+								}
+							}
+							remove_trait = sadistic
+						}
+						add_trait = compassionate
+						root = {
+							send_interface_toast = {
+								title = agot_morau_prodigy.0004.gainedtraitcompassionate
+							}
+						}
+						modifier = {
+							trigger = {
+								root = { has_trait = compassionate }
+							}
+							factor = 1.2
+						}
+						modifier = {
+							trigger = {
+								scope:prodigy = {
+									OR = {
+										has_trait = pensive
+										has_trait = charming
+									}
+								}
+							}
+							add = 10
+						}
+					}
+					30 = {
+						if = {
+							limit = {
+								scope:prodigy = { has_trait = compassionate }
+							}
+							remove_trait = compassionate
+						}
+						add_trait = sadistic
+						root = {
+							send_interface_toast = {
+								title = agot_morau_prodigy.0004.gainedtraitsadistic
+							}
+							trigger_event = agot_morau_prodigy.0018
+						}
+						modifier = {
+							trigger = {
+								root = { has_trait = sadistic }
+							}
+							factor = 1.2
+						}
+						modifier = {
+							root = { has_character_modifier = patron_saagael_modifier }
+							factor = 1.2
+						}
+						modifier = {
+							trigger = {
+								scope:prodigy = {
+									OR = {
+										has_trait = curious
+										has_trait = rowdy
+									}
+								}
+							}
+							add = 10
+						}
+						random_owned_story = {
+							limit = {
+								story_type = agot_story_sote
+							}
+							end_story = yes
+						}
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 50
+		}
+	}
+
+	option = {
+		name = agot_morau_prodigy.0004.b
+		custom_tooltip = agot_morau_prodigy.0004.b.tt
+
+		scope:prodigy = {
+			random_list = {
+				10 = {
+					add_prowess_skill = 3
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0002.gainedprowess3
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 2
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0002.gainedprowess2
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 1
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0002.gainedprowess2
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 0
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0002.gainednoprowess
+						}
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 50
+		}
+	}
+}
+
+# Event 0005: Parent - Blademaster trial or give up
+agot_morau_prodigy.0005 = {
+	type = character_event
+	title = agot_morau_prodigy.0005.t
+	desc = agot_morau_prodigy.0005.desc
+	theme = education
+
+
+	left_portrait = {
+		character = root
+		animation = admiration
+	}
+
+	right_portrait = {
+		character = scope:prodigy
+		animation = ecstasy
+	}
+	immediate = {
+		create_character = {
+			age = { 20 40}
+			gender_female_chance = 0
+			culture = root.culture
+			faith = root.faith
+			location = root.location
+			dynasty = none
+			prowess = 18
+			save_scope_as = training_knight
+
+			after_creation = {
+				add_trait = knight
+			}
+		}
+	}
+
+	option = {
+		name = agot_morau_prodigy.0005.a
+		custom_tooltip = agot_morau_prodigy.0005.a.tt
+
+		scope:prodigy = {
+			random_list = {
+				80 = {
+					if = {
+						limit = {
+							scope:prodigy = {
+								has_trait = lifestyle_blademaster
+							}
+						}
+						add_trait_xp = {
+							trait = lifestyle_blademaster
+							value = 100
+						}
+					}
+					else_if = {
+						limit = {
+							scope:prodigy = {
+								NOT = { has_trait = lifestyle_blademaster }
+							}
+						}
+						add_trait = lifestyle_blademaster
+
+						add_trait_xp = {
+							trait = lifestyle_blademaster
+							value = 75
+						}
+					}
+				}
+
+				10 = {
+					random_list = {
+						33 = {
+							add_trait = one_eyed
+						}
+						33 = {
+							add_trait = one_legged
+						}
+						33 = {
+							add_trait = one_handed
+						}
+					}
+				}
+
+				10 = {
+					death = {
+						death_reason = death_duel
+						killer = scope:training_knight
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = {
+		name = agot_morau_prodigy.0005.b
+		custom_tooltip = agot_morau_prodigy.0005.b.tt
+
+		scope:prodigy = {
+			random_owned_story = {
+				limit = {
+					story_type = agot_story_sote
+				}
+				end_story = yes
+			}
+		}
+		ai_chance = {
+			base = 0
+		}
+	}
+}
+
+# Event 0006: Night before judgment
+agot_morau_prodigy.0006 = {
+	type = character_event
+	title = agot_morau_prodigy.0006.t
+	desc = agot_morau_prodigy.0006.desc
+	theme = education
+
+	left_portrait = {
+		character = root
+		animation = admiration
+	}
+
+	right_portrait = {
+		character = scope:prodigy
+		animation = worry
+	}
+
+	option = {
+		name = agot_morau_prodigy.0006.a
+		custom_tooltip = agot_morau_prodigy.0006.a.tt
+
+		scope:prodigy = {
+			random_owned_story = {
+				limit = {
+					story_type = agot_story_sote
+				}
+				end_story = yes
+			}
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+# Event 0007: Dynasty head judges the prodigy's worthiness
+agot_morau_prodigy.0007 = {
+	type = character_event
+	title = agot_morau_prodigy.0007.t
+	desc = {
+		first_valid = {
+			triggered_desc = {
+				trigger = { root = scope:dayne_dynasty_head }
+				desc = agot_morau_prodigy.0007.desc.non_parent
+			}
+
+			triggered_desc = {
+				trigger = {
+					OR = {
+						root = scope:dayne_parent
+						root = scope:dayne_grandparent
+					}
+				}
+				desc = agot_morau_prodigy.0007.desc
+			}
+		}
+	}
+	theme = education
+
+
+	left_portrait = {
+		character = root
+		animation = admiration
+	}
+
+	right_portrait = {
+		character = scope:prodigy
+		animation = ecstasy
+	}
+
+	immediate = {
+		# Make sure Twilight exists
+		if = {
+			limit = {
+				NOT = { exists = scope:twilight }
+				scope:prodigy.dynasty = {
+					any_dynasty_member = {
+						any_character_artifact = {
+							has_artifact_modifier = vs_twilight_modifier
+						}
+					}
+				}
+			}
+			scope:prodigy.dynasty = {
+				random_dynasty_member = {
+					limit = {
+						any_character_artifact = {
+							has_artifact_modifier = vs_twilight_modifier
+						}
+					}
+					random_character_artifact = {
+						limit = { has_artifact_modifier = vs_twilight_modifier }
+						save_scope_as = twilight
+					}
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				NOT = { exists = scope:twilight }
+			}
+			agot_create_artifact_vs_twilight_effect = { OWNER = scope:prodigy }
+			scope:newly_created_artifact = {
+				save_scope_as = twilight
+			}
+		}
+	}
+
+	option = { # Prodigy becomes Sword of the Evening
+		name = agot_morau_prodigy.0007.a
+		custom_tooltip = agot_morau_prodigy.0007.a.tt
+
+		trigger = {
+			scope:prodigy = {
+				worthy_sword_of_the_evening_trigger = yes
+			}
+		}
+
+		scope:prodigy = {
+			give_nickname = nick_agot_the_sword_of_the_evening
+
+			add_character_flag = is_sword_of_evening
+
+			add_prestige = massive_prestige_value
+			add_prestige_level = 1
+			random_owned_story = {
+				limit = {
+					story_type = agot_story_sote
+				}
+				end_story = yes
+			}
+		}
+
+		scope:twilight = {
+			set_owner = scope:prodigy
+		}
+
+		hidden_effect = {
+			scope:prodigy = {
+				add_character_flag = claimed_twilight
+			}
+
+			scope:twilight = {
+				equip_artifact_to_owner_replace = yes
+			}
+		}
+
+		if = {
+			limit = {
+				scope:dayne_parent = {
+					is_ai = no
+				}
+			}
+			scope:dayne_parent = { trigger_event = agot_morau_prodigy.0016 }
+		}
+		else_if = {
+			limit = {
+				exists = scope:dayne_grandparent
+			}
+			scope:dayne_grandparent = { trigger_event = agot_morau_prodigy.0016 }
+		}
+
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = { # Prodigy fails, may steal Twilight
+		name = agot_morau_prodigy.0007.b
+		custom_tooltip = agot_morau_prodigy.0007.b.tt
+
+		trigger = {
+			scope:prodigy = {
+				worthy_sword_of_the_evening_trigger = no
+			}
+		}
+		hidden_effect = {
+			scope:prodigy ?= {
+				random_list = {
+					10 = {
+						trigger_event = agot_morau_prodigy.0015
+						random_owned_story = {
+							limit = {
+								story_type = agot_story_sote
+							}
+							end_story = yes
+						}
+					}
+					90 = {
+						random_owned_story = {
+							limit = {
+								story_type = agot_story_sote
+							}
+							end_story = yes
+						}
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = { # Worthy but denied
+		name = agot_morau_prodigy.0007.c
+		custom_tooltip = agot_morau_prodigy.0007.c.tt
+
+		trigger = {
+			scope:prodigy = {
+				worthy_sword_of_the_evening_trigger = yes
+			}
+		}
+
+		hidden_effect = {
+			scope:prodigy = {
+				random_list = {
+					10 = {
+						trigger_event = agot_morau_prodigy.0015
+						random_owned_story = {
+							limit = {
+								story_type = agot_story_sote
+							}
+							end_story = yes
+						}
+					}
+					90 = {
+						random_owned_story = {
+							limit = {
+								story_type = agot_story_sote
+							}
+							end_story = yes
+						}
+					}
+				}
+			}
+		}
+
+		ai_chance = {
+			base = 0
+		}
+	}
+}
+
+# Event 0008: Already a Sword of the Evening
+agot_morau_prodigy.0008 = {
+	type = character_event
+	title = agot_morau_prodigy.0008.t
+	desc = agot_morau_prodigy.0008.desc
+	theme = education
+
+	left_portrait = {
+		character = root
+		animation = admiration
+	}
+
+	right_portrait = {
+		character = scope:prodigy
+		animation = ecstasy
+	}
+
+	option = {
+		name = agot_morau_prodigy.0008.a
+		custom_tooltip = agot_morau_prodigy.0008.a.tt
+
+		scope:prodigy = {
+			add_prestige = 100
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+# Events for if Prodigy's parent is dead
+
+# Event 0009: Self - Brave or Prowess
+agot_morau_prodigy.0009 = {
+	type = character_event
+	title = agot_morau_prodigy.0009.t
+	desc = agot_morau_prodigy.0009.desc
+	theme = education
+
+	left_portrait = {
+		character = root
+		animation = admiration
+	}
+
+	option = {
+		name = agot_morau_prodigy.0009.a
+		custom_tooltip = agot_morau_prodigy.0009.a.tt
+
+		trigger = {
+			scope:prodigy = {
+				number_of_personality_traits < personality_trait_limit
+			}
+		}
+
+		hidden_effect = {
+			scope:prodigy = {
+				if = {
+					limit = {
+						number_of_personality_traits < personality_trait_limit
+					}
+					random_list = {
+						70 = {
+							if = {
+								limit = {
+									scope:prodigy = {
+										has_trait = craven
+									}
+								}
+								remove_trait = craven
+							}
+							add_trait = brave
+							root = {
+								send_interface_toast = {
+									title = agot_morau_prodigy.0009.gainedtraitbrave
+								}
+							}
+							modifier = {
+								trigger = {
+									scope:prodigy = {
+										OR = {
+											has_trait = rowdy
+											has_trait = curious
+										}
+									}
+								}
+								add = 10
+							}
+						}
+						30 = {
+							add_trait = craven
+							root = {
+								send_interface_toast = {
+									title = agot_morau_prodigy.0009.gainedtraitcraven
+								}
+								trigger_event = agot_morau_prodigy.0019
+							}
+							modifier = {
+								trigger = {
+									scope:prodigy = {
+										has_trait = pensive
+									}
+								}
+								add = 10
+							}
+							random_owned_story = {
+								limit = {
+									story_type = agot_story_sote
+								}
+								end_story = yes
+							}
+						}
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 50
+		}
+
+	}
+
+	option = {
+		name = agot_morau_prodigy.0009.b
+		custom_tooltip = agot_morau_prodigy.0009.b.tt
+
+		scope:prodigy = {
+			random_list = {
+				10 = {
+					add_prowess_skill = 3
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0009.gainedprowess3
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 2
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0009.gainedprowess2
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 1
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0009.gainedprowess1
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 0
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0009.gainednoprowess
+						}
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 50
+		}
+	}
+}
+
+# Event 0010: Self - Just or Prowess
+agot_morau_prodigy.0010 = {
+	type = character_event
+	title = agot_morau_prodigy.0010.t
+	desc = agot_morau_prodigy.0010.desc
+	theme = education
+
+	left_portrait = {
+		character = root
+		animation = admiration
+	}
+
+	option = {
+		name = agot_morau_prodigy.0010.a
+		custom_tooltip = agot_morau_prodigy.0010.a.tt
+
+		trigger = {
+			scope:prodigy = {
+				number_of_personality_traits < personality_trait_limit
+			}
+		}
+
+		hidden_effect = {
+			scope:prodigy = {
+				random_list = {
+					70 = {
+						if = {
+							limit = {
+								scope:prodigy = {
+									has_trait = callous
+								}
+							}
+							remove_trait = callous
+						}
+						add_trait = just
+						root = {
+							send_interface_toast = {
+								title = agot_morau_prodigy.0010.gainedtraitjust
+							}
+						}
+						modifier = {
+							trigger = {
+								scope:prodigy = {
+									OR = {
+										has_trait = pensive
+										has_trait = charming
+									}
+								}
+							}
+							add = 10
+						}
+					}
+					30 = {
+						if = {
+							limit = {
+								scope:prodigy = { has_trait = just }
+							}
+							remove_trait = just
+						}
+						add_trait = callous
+						root = {
+							send_interface_toast = {
+								title = agot_morau_prodigy.0010.gainedtraitcallous
+							}
+							trigger_event = agot_morau_prodigy.0019
+						}
+						modifier = {
+							trigger = {
+								scope:prodigy = {
+									OR = {
+										has_trait = bossy
+										has_trait = rowdy
+									}
+								}
+							}
+							add = 10
+						}
+						random_owned_story = {
+							limit = {
+								story_type = agot_story_sote
+							}
+							end_story = yes
+						}
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 50
+		}
+	}
+
+	option = {
+		name = agot_morau_prodigy.0010.b
+		custom_tooltip = agot_morau_prodigy.0010.b.tt
+
+		scope:prodigy = {
+			random_list = {
+				10 = {
+					add_prowess_skill = 3
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0009.gainedprowess3
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 2
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0009.gainedprowess2
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 1
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0009.gainedprowess1
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 0
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0009.gainednoprowess
+						}
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 50
+		}
+	}
+}
+
+# Event 0011: Self - Compassionate or Prowess
+agot_morau_prodigy.0011 = {
+	type = character_event
+	title = agot_morau_prodigy.0011.t
+	desc = agot_morau_prodigy.0011.desc
+	theme = education
+
+	left_portrait = {
+		character = root
+		animation = admiration
+	}
+
+	option = {
+		name = agot_morau_prodigy.0011.a
+		custom_tooltip = agot_morau_prodigy.0011.a.tt
+
+		trigger = {
+			scope:prodigy = {
+				number_of_personality_traits < personality_trait_limit
+			}
+		}
+
+		hidden_effect = {
+			scope:prodigy = {
+				random_list = {
+					70 = {
+						if = {
+							limit = {
+								scope:prodigy = {
+									has_trait = sadistic
+								}
+							}
+							remove_trait = sadistic
+						}
+						add_trait = compassionate
+						root = {
+							send_interface_toast = {
+								title = agot_morau_prodigy.0011.gainedtraitcompassionate
+							}
+						}
+						modifier = {
+							trigger = {
+								scope:prodigy = {
+									OR = {
+										has_trait = pensive
+										has_trait = charming
+									}
+								}
+							}
+							add = 10
+						}
+					}
+					30 = {
+						if = {
+							limit = {
+								scope:prodigy = { has_trait = compassionate }
+							}
+							remove_trait = compassionate
+						}
+						add_trait = sadistic
+						root = {
+							send_interface_toast = {
+								title = agot_morau_prodigy.0011.gainedtraitsadistic
+							}
+							trigger_event = agot_morau_prodigy.0019
+						}
+						modifier = {
+							root = { has_character_modifier = patron_saagael_modifier }
+							factor = 1.2
+						}
+						modifier = {
+							trigger = {
+								scope:prodigy = {
+									OR = {
+										has_trait = curious
+										has_trait = rowdy
+									}
+								}
+							}
+							add = 10
+						}
+						random_owned_story = {
+							limit = {
+								story_type = agot_story_sote
+							}
+							end_story = yes
+						}
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 50
+		}
+	}
+
+	option = {
+		name = agot_morau_prodigy.0011.b
+		custom_tooltip = agot_morau_prodigy.0011.b.tt
+
+		scope:prodigy = {
+			random_list = {
+				10 = {
+					add_prowess_skill = 3
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0009.gainedprowess3
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 2
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0009.gainedprowess2
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 1
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0009.gainedprowess1
+						}
+					}
+				}
+				30 = {
+					add_prowess_skill = 0
+					root = {
+						send_interface_toast = {
+							title = agot_morau_prodigy.0009.gainednoprowess
+						}
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 50
+		}
+	}
+}
+
+# Event 0012: Self - Blademaster trial or give up
+agot_morau_prodigy.0012 = {
+	type = character_event
+	title = agot_morau_prodigy.0012.t
+	desc = agot_morau_prodigy.0012.desc
+	theme = education
+
+
+	left_portrait = {
+		character = root
+		animation = admiration
+	}
+
+	right_portrait = {
+		character = scope:prodigy
+		animation = ecstasy
+	}
+
+	option = {
+		name = agot_morau_prodigy.0012.a
+		custom_tooltip = agot_morau_prodigy.0012.a.tt
+
+		scope:prodigy = {
+			random_list = {
+				70 = {
+					if = {
+						limit = {
+							scope:prodigy = {
+								has_trait = lifestyle_blademaster
+							}
+						}
+						add_trait_xp = {
+							trait = lifestyle_blademaster
+							value = 50
+						}
+					}
+					else_if = {
+						limit = {
+							scope:prodigy = {
+								NOT = { has_trait = lifestyle_blademaster }
+							}
+						}
+						add_trait = lifestyle_blademaster
+
+						add_trait_xp = {
+							trait = lifestyle_blademaster
+							value = 75
+						}
+					}
+				}
+
+				20 = {
+					random_list = {
+						33 = {
+							add_trait = one_eyed
+						}
+						33 = {
+							add_trait = one_legged
+						}
+						33 = {
+							add_trait = one_handed
+						}
+					}
+				}
+
+				10 = {
+					create_character = {
+						age = { 20 40}
+						gender_female_chance = 0
+						culture = root.culture
+						faith = root.faith
+						location = root.location
+						dynasty = none
+						prowess = 18
+						save_scope_as = training_knight
+
+						after_creation = {
+							add_trait = knight
+						}
+					}
+					death = {
+						death_reason = death_duel
+						killer = scope:training_knight
+					}
+				}
+			}
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = {
+		name = agot_morau_prodigy.0012.b
+		custom_tooltip = agot_morau_prodigy.0012.b.tt
+
+		scope:prodigy = {
+			random_owned_story = {
+				limit = {
+					story_type = agot_story_sote
+				}
+				end_story = yes
+			}
+		}
+		ai_chance = {
+			base = 0
+		}
+	}
+}
+
+# Event 0013: Self - Judgment (player is prodigy)
+agot_morau_prodigy.0013 = {
+	type = character_event
+	title = agot_morau_prodigy.0013.t
+	desc = {
+		desc = agot_morau_prodigy.0013.desc.intro
+		first_valid = {
+			triggered_desc = {
+				trigger = {
+					scope:prodigy = { worthy_sword_of_the_evening_trigger = yes }
+				}
+				desc = agot_morau_prodigy.0013.desc.worthynothousehead
+			}
+
+			triggered_desc = {
+				trigger = {
+					scope:prodigy = { worthy_sword_of_the_evening_trigger = no }
+				}
+				desc = agot_morau_prodigy.0013.desc.unworthynothousehead
+			}
+
+			triggered_desc = {
+				trigger = {
+					scope:prodigy = {
+						this = dynasty:dynn_Dayne.dynast
+						worthy_sword_of_the_evening_trigger = yes
+					}
+				}
+				desc = agot_morau_prodigy.0013.desc.worthyhousehead
+			}
+
+			triggered_desc = {
+				trigger = {
+					scope:prodigy = {
+						this = dynasty:dynn_Dayne.dynast
+						worthy_sword_of_the_evening_trigger = no
+					}
+				}
+				desc = agot_morau_prodigy.0013.desc.unworthyhousehead
+			}
+		}
+	}
+	theme = education
+
+
+	left_portrait = {
+		character = root
+		triggered_animation = {
+			trigger = {
+				scope:prodigy = {
+					worthy_sword_of_the_evening_trigger = yes
+				}
+			}
+			animation = ecstasy
+		}
+		animation = grief
+	}
+
+	immediate = {
+		# Make sure Twilight exists
+		if = {
+			limit = {
+				NOT = { exists = scope:twilight }
+				scope:prodigy.dynasty = {
+					any_dynasty_member = {
+						any_character_artifact = {
+							has_artifact_modifier = vs_twilight_modifier
+						}
+					}
+				}
+			}
+			scope:prodigy.dynasty = {
+				random_dynasty_member = {
+					limit = {
+						any_character_artifact = {
+							has_artifact_modifier = vs_twilight_modifier
+						}
+					}
+					random_character_artifact = {
+						limit = { has_artifact_modifier = vs_twilight_modifier }
+						save_scope_as = twilight
+					}
+				}
+			}
+		}
+		else_if = {
+			limit = {
+				NOT = { exists = scope:twilight }
+			}
+			agot_create_artifact_vs_twilight_effect = { OWNER = scope:prodigy }
+			scope:newly_created_artifact = {
+				save_scope_as = twilight
+			}
+		}
+	}
+
+	option = { # Prodigy becomes Sword of the Evening
+		name = agot_morau_prodigy.0013.a
+		custom_tooltip = agot_morau_prodigy.0013.a.tt
+
+		trigger = {
+			scope:prodigy = {
+				worthy_sword_of_the_evening_trigger = yes
+			}
+		}
+
+		scope:prodigy = {
+			give_nickname = nick_agot_the_sword_of_the_evening
+
+			add_character_flag = is_sword_of_evening
+
+			add_prestige = massive_prestige_value
+			add_prestige_level = 1
+			random_owned_story = {
+				limit = {
+					story_type = agot_story_sote
+				}
+				end_story = yes
+			}
+		}
+
+		scope:twilight = {
+			set_owner = scope:prodigy
+		}
+
+		hidden_effect = {
+			scope:prodigy = {
+				add_character_flag = claimed_twilight
+			}
+
+			scope:twilight = {
+				equip_artifact_to_owner_replace = yes
+			}
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+
+	option = { # Prodigy fails
+		name = agot_morau_prodigy.0013.b
+		custom_tooltip = agot_morau_prodigy.0013.b.tt
+
+		trigger = {
+			scope:prodigy = {
+				worthy_sword_of_the_evening_trigger = no
+			}
+		}
+
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+# Event 0014: Already a Sword of the Evening (player is prodigy)
+agot_morau_prodigy.0014 = {
+	type = character_event
+	title = agot_morau_prodigy.0014.t
+	desc = agot_morau_prodigy.0014.desc
+	theme = education
+
+	left_portrait = {
+		character = root
+		animation = admiration
+	}
+
+	option = {
+		name = agot_morau_prodigy.0014.a
+		custom_tooltip = agot_morau_prodigy.0014.a.tt
+
+		scope:prodigy = {
+			add_prestige = 100
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+# Event 0015: Prodigy steals Twilight
+agot_morau_prodigy.0015 = {
+	type = character_event
+	title = agot_morau_prodigy.0015.t
+	desc = agot_morau_prodigy.0015.desc
+	theme = education
+
+	left_portrait = {
+		character = root
+		animation = threatening
+	}
+
+	trigger = {
+		scope:prodigy = {
+			is_imprisoned = no
+		}
+	}
+
+	immediate = {
+		scope:prodigy ?= {
+			add_character_flag = claimed_twilight
+			add_prestige_level = -1
+		}
+
+		scope:twilight ?= {
+			set_owner = scope:prodigy
+		}
+
+		scope:twilight ?= {
+			equip_artifact_to_owner_replace = yes
+		}
+	}
+
+	option = {
+		name = agot_morau_prodigy.0015.a
+		custom_tooltip = agot_morau_prodigy.0015.a.tt
+		if = {
+			limit = {
+				exists = scope:dayne_grandparent
+				root = scope:dayne_grandparent
+			}
+			random_list = {
+				95 = {
+					imprison_character_effect = {
+						TARGET = scope:prodigy
+						IMPRISONER = scope:dayne_grandparent
+					}
+				}
+				5 = {
+					scope:prodigy ?= {
+						create_landless_adventurer_title_effect = {
+							REASON = flag:exile
+							FLAVOR_CHAR = scope:prodigy
+						}
+					}
+				}
+			}
+		}
+		else = {
+			random_list = {
+				95 = {
+					imprison_character_effect = {
+						TARGET = scope:prodigy
+						IMPRISONER = scope:dayne_parent
+					}
+				}
+				5 = {
+					scope:prodigy = {
+						create_landless_adventurer_title_effect = {
+							REASON = flag:exile
+							FLAVOR_CHAR = scope:prodigy
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+# Event 0016: Notify parent their child became Sword of the Evening
+agot_morau_prodigy.0016 = {
+	type = character_event
+	title = agot_morau_prodigy.0016.t
+	desc = agot_morau_prodigy.0016.desc
+	theme = education
+
+	left_portrait = {
+		character = root
+		animation = ecstasy
+	}
+
+	right_portrait = {
+		character = scope:prodigy
+		animation = ecstasy
+	}
+
+	option = {
+		name = agot_morau_prodigy.0016.a
+		custom_tooltip = agot_morau_prodigy.0016.a.tt
+
+		root = {
+			add_prestige = 100
+		}
+	}
+}
+
+# Event 0017: Prodigy died
+agot_morau_prodigy.0017 = {
+	type = character_event
+	title = agot_morau_prodigy.0017.t
+	desc = agot_morau_prodigy.0017.desc
+	theme = death
+
+	left_portrait = {
+		character = root
+		animation = grief
+	}
+
+	right_portrait = {
+		character = scope:prodigy
+		animation = dead
+	}
+
+	option = {
+		name = agot_morau_prodigy.0017.a
+		custom_tooltip = agot_morau_prodigy.0017.a.tt
+
+		root = {
+			if = {
+				limit = {
+					NOT = { has_trait = callous }
+				}
+				add_stress = major_stress_gain
+			}
+		}
+		scope:prodigy = {
+			random_owned_story = {
+				limit = {
+					story_type = agot_story_sote
+				}
+				end_story = yes
+			}
+		}
+		ai_chance = {
+			base = 100
+		}
+	}
+}
+
+# Event 0018: Parent notified prodigy failed (with parent)
+agot_morau_prodigy.0018 = {
+	type = character_event
+	title = agot_morau_prodigy.0018.t
+	desc = agot_morau_prodigy.0018.desc
+	theme = education
+
+	left_portrait = {
+		character = root
+		animation = sadness
+	}
+
+	right_portrait = {
+		character = scope:prodigy
+		animation = sadness
+	}
+
+	option = {
+		name = agot_morau_prodigy.0018.a
+		custom_tooltip = agot_morau_prodigy.0018.a.tt
+	}
+}
+
+# Event 0019: Prodigy notified they failed (without parent)
+agot_morau_prodigy.0019 = {
+	type = character_event
+	title = agot_morau_prodigy.0019.t
+	desc = agot_morau_prodigy.0019.desc
+	theme = education
+
+	left_portrait = {
+		character = root
+		animation = sadness
+	}
+
+	option = {
+		name = agot_morau_prodigy.0019.a
+		custom_tooltip = agot_morau_prodigy.0019.a.tt
+	}
+}

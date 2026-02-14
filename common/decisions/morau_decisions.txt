@@ -1,0 +1,207 @@
+﻿# Decision to claim Twilight if you are worthy and already own it
+claim_twilight_worthy_decision = {
+	picture = {
+		reference = "gfx/interface/illustrations/decisions/decision_misc.dds"
+	}
+	decision_group_type = major
+
+	sort_order = 1
+
+	cost = { }
+
+	desc = claim_twilight_worthy_decision_desc
+
+	is_shown = {
+		worthy_sword_of_the_evening_trigger = yes
+		any_character_artifact = {
+			has_artifact_modifier = vs_twilight_modifier
+		}
+		NOT = { has_character_flag = claimed_twilight }
+	}
+
+	is_valid = {
+		worthy_sword_of_the_evening_trigger = yes
+	}
+
+	ai_check_interval_by_tier = {
+		barony = 0
+		county = 60
+		duchy = 60
+		kingdom = 60
+		empire = 60
+		hegemony = 60
+	}
+
+	ai_potential = { always = yes }
+
+	ai_will_do = { base = 100 }
+
+	effect = {
+		give_nickname = nick_agot_the_sword_of_the_evening
+
+		add_character_flag = claimed_twilight
+		add_character_flag = is_sword_of_evening
+
+		random_character_artifact = {
+			limit = { has_artifact_modifier = vs_twilight_modifier }
+			save_scope_as = twilight
+		}
+
+		add_prestige = massive_prestige_value
+		add_prestige_level = 1
+
+		hidden_effect = {
+			scope:twilight = {
+				equip_artifact_to_owner_replace = yes
+			}
+		}
+	}
+}
+
+# Decision to claim Twilight if you are unworthy and already own it
+claim_twilight_unworthy_decision = {
+	picture = {
+		reference = "gfx/interface/illustrations/decisions/decision_misc.dds"
+	}
+	desc = claim_twilight_unworthy_decision_desc
+	sort_order = 1
+
+	decision_group_type = artifact
+
+	cost = { prestige = 1000 }
+
+	is_shown = {
+		worthy_sword_of_the_evening_trigger = no
+		any_character_artifact = {
+			has_artifact_modifier = vs_twilight_modifier
+		}
+		NOT = { has_character_flag = claimed_twilight }
+	}
+
+	is_valid = {
+		NOT = { worthy_sword_of_the_evening_trigger = yes }
+	}
+
+	ai_check_interval_by_tier = {
+		barony = 0
+		county = 0
+		duchy = 0
+		kingdom = 0
+		empire = 0
+		hegemony = 0
+	}
+
+	ai_potential = { always = no }
+
+	ai_will_do = { base = 100 }
+
+	effect = {
+		add_character_flag = claimed_twilight
+
+		random_character_artifact = {
+			limit = { has_artifact_modifier = vs_twilight_modifier }
+			save_scope_as = twilight
+		}
+
+		add_prestige_level = -1
+
+		hidden_effect = {
+			scope:twilight = {
+				equip_artifact_to_owner_replace = yes
+			}
+		}
+	}
+}
+
+# Decision to begin training a child as a Sword of the Evening prodigy
+train_sword_of_evening_prodigy_decision = {
+	picture = {
+		reference = "gfx/interface/illustrations/decisions/decision_misc.dds"
+	}
+	decision_group_type = major
+
+	sort_order = 1
+
+	cost = { }
+
+	desc = train_sword_of_evening_prodigy_decision_desc
+
+	is_shown = {
+		is_dayne_bastard_house_trigger = yes
+		any_child = {
+			is_dayne_bastard_house_trigger = yes
+			age >= 6
+			age < 16
+			NOT = {
+				any_owned_story = {
+					story_type = agot_story_sote
+				}
+			}
+		}
+	}
+
+	is_valid = {
+		any_child = {
+			is_dayne_bastard_house_trigger = yes
+			age >= 6
+			age < 16
+			NOT = {
+				any_owned_story = {
+					story_type = agot_story_sote
+				}
+			}
+			NOR = {
+				has_trait = physique_bad
+				has_trait = weak
+				has_trait = intellect_bad
+				has_trait = dull
+			}
+		}
+	}
+
+	ai_check_interval_by_tier = {
+		barony = 0
+		county = 120
+		duchy = 120
+		kingdom = 120
+		empire = 120
+		hegemony = 120
+	}
+
+	ai_potential = {
+		is_dayne_bastard_house_trigger = yes
+	}
+
+	ai_will_do = { base = 50 }
+
+	effect = {
+		random_child = {
+			limit = {
+				is_dayne_bastard_house_trigger = yes
+				age >= 6
+				age < 16
+				NOT = {
+					any_owned_story = {
+						story_type = agot_story_sote
+					}
+				}
+				NOR = {
+					has_trait = physique_bad
+					has_trait = weak
+					has_trait = intellect_bad
+					has_trait = dull
+				}
+			}
+			save_scope_as = prodigy
+		}
+		root = { save_scope_as = dayne_father }
+		if = {
+			limit = {
+				exists = scope:prodigy.mother
+				scope:prodigy.mother = { is_alive = yes }
+			}
+			scope:prodigy.mother = { save_scope_as = dayne_mother }
+		}
+		trigger_event = agot_morau_prodigy.0001
+	}
+}
